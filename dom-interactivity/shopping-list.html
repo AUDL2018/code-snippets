@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Adding interactivity</title>
+</head>
+<body>
+  <h1>My shopping list</h1>
+  <p>
+    This is a description of my list
+  </p>
+
+  <form id="shoppingForm">
+    <input type="text" placeholder="Enter item here..." id="newItem">
+    <input type="submit" value="Add item">
+  </form>
+
+  <ul id="shoppingList">
+    <li>Sugar</li>
+    <li>Milk</li>
+    <li>Bananas</li>
+    <li>Coffee</li>
+  </ul>
+
+  <script>
+    // Select our header on the page, the H1 element
+    let pageHeader = document.querySelector('h1')
+    console.log('H1 element', pageHeader)
+
+    // Select our list's items
+    let groceries = document.querySelectorAll('#shoppingList li')
+    console.log('All groceries items', groceries)
+
+    // Add event to our form
+    // First we select our form
+    let form = document.querySelector('#shoppingForm')
+
+    // Next we add a event listener to override default behaviour
+    form.addEventListener('submit', function (event) {
+      // Make sure not to submit form like usual
+      event.preventDefault()
+
+      // Select out input field
+      let inputField = document.querySelector('#newItem')
+
+      // Create new <li> element
+      let newListElement = document.createElement('li')
+
+      // Set the text of the <li> element
+      newListElement.innerHTML = inputField.value
+
+      // Select the list we want to add our new item to
+      let shoppingList = document.querySelector('#shoppingList')
+
+      // Add our element to the list
+      shoppingList.appendChild(newListElement)
+
+      // Delete content of the input field
+      inputField.value = ''
+    })
+  </script>
+</body>
+</html>
