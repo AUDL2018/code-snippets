@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/css/bootstrap.min.css">
+  <title>Working with fetch</title>
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <h1 class="h3 mt-5">Working with fetch</h1>
+        <p class="lead mb-5">
+          A small showcase of how to use the browser's fetch method together with <a href="https://developer.github.com/v3/" target="_blank">GitHub's API</a>.
+        </p>
+        <div class="row justify-content-between">
+          <div class="col-5">
+            <h2 class="h5">Look up single user <small><a href="https://developer.github.com/v3/users/#get-a-single-user" target="_blank">Documentation</a></small></h2>
+            <form id="single-user-form">
+              <div class="input-group input-group-sm">
+                <input type="text" class="form-control" placeholder="GitHub username" id="single-user-input">
+                <div class="input-group-append">
+                  <button class="btn btn-secondary" id="single-user-button">Look up</button>
+                </div>
+              </div>
+            </form>
+            <hr>
+            <div id="single-user">
+            </div>
+          </div>
+          <div class="col col-5">
+            <h2 class="h5">Search for users <small><a href="https://developer.github.com/v3/search/#search-users" target="_blank">Documentation</a></small></h2>
+            <form id="search-user-form">
+              <div class="input-group input-group-sm">
+                <input type="text" class="form-control" placeholder="Search query" id="search-user-input">
+                <div class="input-group-append">
+                  <button class="btn btn-secondary" id="search-user-button">Search</button>
+                </div>
+              </div>
+            </form>
+            <hr>
+            <div id="search-user-results">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Tiny GitHub API module
+    var GitHub = (function () {
+      let module = {}
+
+      // Method to look up specific user
+      // Documentation: https://developer.github.com/v3/users/#get-a-single-user
+      // Returns a promise
+      module.getUser = function (username) {
+        let url = `https://api.github.com/users/${username}`
+
+        // Log that we are sending this request
+        console.log('Sending request: ', url)
+
+        // Return the promise that fetch() returns
+        // And convert the response to JSON first
+        // Note: GitHub's API returns a JSON response
+        return fetch(url)
+        .then(response => {
+          // Check the HTTP status code
+          // 200 = OK
+          // 404 = Not found
+          // More codes: https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+          if (response.ok) {
+            // Return the response a JSON data
+            return response.json()
+          } else {
+            // Throw an error - it will be "catched" through
+            // the .catch() method on the promise
+            throw new Error(response.statusText)
+          }
+        })
+      }
+
+      // Method for search GitHub's users
+      // Documentation: https://developer.github.com/v3/search/#search-users
+      module.searchForUser = function (query) {
+        let url = `https://api.github.com/search/users?q=${query}`
+
+        return fetch(url)
+        .then(response => {
+          if (response.ok) {
+            return response.json()
+          } else {
+            throw new Error(response.statusText)
+          }
+        })
+      }
+
+      return module
+    })()
+
+    // Select and add a event listener to our single user form
+    let singleUserForm = document.querySelector('#single-user-form')
+    singleUserForm.addEventListener('submit', e => {
+      // Prevent the form from submitting
+      e.preventDefault()
+
+      // Select out input
+      let input = document.querySelector('#single-user-input')
+      // Disable the field so no further input can be typed
+      // while the request to GitHub is being performed
+      input.disabled = true
+
+      // Select our submit button
+      let button = document.querySelector('#single-user-button')
+      // Disable it to
+      button.disabled = true
+      // Change the text of the button
+      button.innerHTML = 'Getting user...'
+
+      // Check if the user has typed in a value
+      if (input.value != '') {
+        // Call the method to get a user from GitHub
+        GitHub.getUser(input.value)
+        .then(user => {
+          // When a user has been succesfully loaded
+          // Re-enable the button and input field
+          // Also change the text of the button
+          button.disabled = false
+          input.disabled = false
+          button.innerHTML = 'Look up'
+
+          // Display the recieved user through our custom function
+          displayUser(user)
+        })
+        .catch(error => {
+          // If an error accured, show an alert box
+          // and log the error to the console
+          alert('Something went wrong, check the console')
+          console.log('Error!', error)
+        })
+      } else {
+        // Tell the user to input something in the input field
+        alert('Please input a GitHub username!')
+      }
+
+    })
+
+    function displayUser (user) {
+      // Arrow function which returns a string which contains html markup
+      // The function destructs the object that is given
+      // Documentation: https://javascript.info/destructuring-assignment
+      // Further it uses backtics ``, so we can embed variable using ${}
+      // Documentation: https://javascript.info/string
+      const userTemplate = ({name, login: username, avatar_url, html_url: profile_url, public_repos  }) => `
+        <div class="card">
+          <div class="card-body">
+            <div class="media">
+              <img src="${avatar_url}" class="mr-3 rounded" width="80">
+              <div class="media-body">
+                <h5>${username}</h5>
+                <h6 class="text-muted">${name}</h6>
+                <p>
+                  Public repositories: ${public_repos}
+                </p>
+                <a href="${profile_url}" target="_blank">View profile</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      `
+
+      // Call the arrow function
+      let html = userTemplate(user)
+
+      // Set the HTML of the #single-user element
+      document.querySelector('#single-user').innerHTML = html
+    }
+
+    //////////////////////////////////////////////////
+    // Exercise: Display search results from GitHub //
+    //////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////////////////////////
+    // Steps
+    // 1) Add a event listener for the search form
+    // 2) Call GitHub.searchForUser() using input from the form
+    // 3) Log the results to the browser for testing purposes
+    // 4) Implement a displaySearchResults() function to display the users
+    // like the displayUser function
+    /////////////////////////////////////////////////////////////////////////
+
+
+    // Finish this function
+    function displaySearchResults (results) {
+      // results should contain an array of user objects
+      // Go through each element in the array using:
+      // a for loop or the array's built-in .forEach() method
+      // forEach(): https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach
+      // for loop: https://www.w3schools.com/js/js_loop_for.asp
+
+      // Within either forEach or the for loop
+    }
+  </script>
+</body>
+</html>

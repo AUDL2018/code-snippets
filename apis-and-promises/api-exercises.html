@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>API exercises</title>
+</head>
+<body>
+  <h1>API exercises</h1>
+  <p>
+    Go to <a href="https://jsonplaceholder.typicode.com" target="_blank">https://jsonplaceholder.typicode.com</a>.
+  </p>
+  <p>
+    Try working with the different ressources decribed on the page.
+  </p>
+  <p>
+    Make requests to collections like /posts and to single ressources like /posts/123
+  </p>
+  <script>
+    var JSONAPI = (function () {
+      let baseUrl = 'https://jsonplaceholder.typicode.com'
+
+      let module = {}
+
+      module.getPosts = function () {
+        let url = `${baseUrl}/posts`
+
+        return fetch(url)
+      }
+
+      module.getPost = function (id) {
+        let url = `${baseUrl}/posts/${id}`
+
+        return fetch(url)
+      }
+
+      return module
+    })()
+
+    // Get all posts
+    JSONAPI.getPosts()
+    .then(response => response.json())
+    .then(json => {
+      console.log('Posts', json)
+    })
+
+    // Get a specific post
+    JSONAPI.getPost(42)
+    .then(response => response.json())
+    .then(json => {
+      console.log('Posts ID #42', json)
+    })
+
+  </script>
+</body>
+</html>
