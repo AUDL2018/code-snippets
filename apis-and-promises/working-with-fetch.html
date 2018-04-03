@@ -88,6 +88,8 @@
       module.searchForUser = function (query) {
         let url = `https://api.github.com/search/users?q=${query}`
 
+        console.log('Calling this url:', url)
+
         return fetch(url)
         .then(response => {
           if (response.ok) {
@@ -192,6 +194,30 @@
     // like the displayUser function
     /////////////////////////////////////////////////////////////////////////
 
+    let searchUserForm = document.querySelector('#search-user-form')
+    
+    searchUserForm.addEventListener('submit', function (event) {
+      event.preventDefault()
+      console.log('Submitting form...')
+
+      let searchUserInput = document.querySelector('#search-user-input')
+
+      let query = searchUserInput.value
+
+      console.log('Input value', query)
+
+      GitHub.searchForUser(query)
+      .then(results => {
+        console.log('Results', results)
+        displaySearchResults(results.items)
+      })
+      .catch(error => {
+        console.log('Error', error)
+      })
+      
+
+    })
+
 
     // Finish this function
     function displaySearchResults (results) {
@@ -200,8 +226,26 @@
       // a for loop or the array's built-in .forEach() method
       // forEach(): https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach
       // for loop: https://www.w3schools.com/js/js_loop_for.asp
-
       // Within either forEach or the for loop
+
+      console.log('Results', results)
+
+      let searchResultContainer = document.querySelector('#search-user-results')
+
+      let html = ''
+
+      results.forEach(result => {
+
+        html += `
+          <img src="${result.avatar_url}"/ width="50">
+          <p>
+            <a href="${result.html_url}" target="_blank">${result.login}</a>
+          </p>
+          `
+
+      })
+
+      searchResultContainer.innerHTML = html
     }
   </script>
 </body>
